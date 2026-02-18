@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -39,9 +40,29 @@ export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
   const theme = useTheme();
   const colorMode = React.useContext(ColorModeContext);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
+  };
+
+  const handleNavClick = (path) => {
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(path);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(path);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    setOpen(false);
   };
 
   return (
@@ -83,11 +104,42 @@ export default function AppAppBar() {
         >
           {/* LEFT: Logo & Navigation */}
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-            <LogoIcon />
+            <Box component={RouterLink} to="/" sx={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <LogoIcon />
+            </Box>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-              <Button variant="text" sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} size="small">Objectives</Button>
-              <Button variant="text" sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} size="small">Architecture</Button>
-              <Button variant="text" sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} size="small">Tech Stack</Button>
+              <Button 
+                variant="text" 
+                onClick={() => handleNavClick('features')}
+                sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} 
+                size="small"
+              >
+                Features
+              </Button>
+              <Button 
+                variant="text" 
+                onClick={() => handleNavClick('how-it-works')}
+                sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} 
+                size="small"
+              >
+                How It Works
+              </Button>
+              <Button 
+                variant="text" 
+                onClick={() => handleNavClick('testimonials')}
+                sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} 
+                size="small"
+              >
+                Testimonials
+              </Button>
+              <Button 
+                variant="text" 
+                onClick={() => handleNavClick('faq')}
+                sx={{ color: theme.palette.mode === 'light' ? 'text.secondary' : '#fff', textTransform: 'none' }} 
+                size="small"
+              >
+                FAQ
+              </Button>
             </Box>
           </Box>
 
@@ -115,6 +167,8 @@ export default function AppAppBar() {
 
             {/* Desktop Auth Buttons */}
             <Button
+              component={RouterLink}
+              to="/login"
               variant="text"
               size="small"
               sx={{
@@ -128,6 +182,8 @@ export default function AppAppBar() {
             </Button>
 
             <Button
+              component={RouterLink}
+              to="/signup"
               variant="contained"
               size="small"
               sx={{
@@ -152,13 +208,21 @@ export default function AppAppBar() {
               </Button>
               <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
                 <Box sx={{ minWidth: '65vw', p: 2 }}>
-                  <MenuItem onClick={toggleDrawer(false)}>Objectives</MenuItem>
-                  <MenuItem onClick={toggleDrawer(false)}>Architecture</MenuItem>
-                  <MenuItem onClick={toggleDrawer(false)}>Tech Stack</MenuItem>
+                  <MenuItem onClick={() => handleNavClick('features')}>Features</MenuItem>
+                  <MenuItem onClick={() => handleNavClick('how-it-works')}>How It Works</MenuItem>
+                  <MenuItem onClick={() => handleNavClick('testimonials')}>Testimonials</MenuItem>
+                  <MenuItem onClick={() => handleNavClick('faq')}>FAQ</MenuItem>
                   <Divider sx={{ my: 2 }} />
-                  <MenuItem onClick={toggleDrawer(false)}>Login</MenuItem>
+                  <MenuItem component={RouterLink} to="/login" onClick={toggleDrawer(false)}>Login</MenuItem>
                   <Box sx={{ p: 1 }}>
-                    <Button variant="contained" fullWidth sx={{ borderRadius: 2, textTransform: 'none' }}>
+                    <Button 
+                      component={RouterLink} 
+                      to="/signup"
+                      variant="contained" 
+                      fullWidth 
+                      sx={{ borderRadius: 2, textTransform: 'none' }}
+                      onClick={toggleDrawer(false)}
+                    >
                       Get Started for Free
                     </Button>
                   </Box>

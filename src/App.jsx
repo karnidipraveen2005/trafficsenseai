@@ -1,10 +1,11 @@
 import * as React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import AppAppBar from './components/AppAppBar';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import DetailedFeatures from './components/DetailedFeatures';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 // Context for Dark/Light mode
 export const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
@@ -75,10 +76,21 @@ export default function App() {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AppAppBar />
-        <Hero />
-        <Features />
-        <DetailedFeatures />
+        <Router>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <AppAppBar />
+                  <Home />
+                </>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Routes>
+        </Router>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );

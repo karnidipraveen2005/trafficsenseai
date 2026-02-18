@@ -81,7 +81,7 @@ export default function Features() {
   );
 
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.default' }}>
+    <Box id="features" sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.default' }}>
       <style>
         {`@keyframes pulse {
           0% { opacity: 1; box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
@@ -109,13 +109,15 @@ export default function Features() {
             variant="h2"
             sx={{ fontWeight: 800, fontSize: { xs: '2rem', md: '3rem' }, mb: 1 }}
           >
-            System Capabilities
+            Our Features
           </Typography>
           <Typography
             color="text.secondary"
             sx={{ maxWidth: 600, mx: 'auto', fontSize: '1.1rem' }}
           >
-            High-performance perception layers designed for real-time safety.
+            Explore why TrafficSense AI stands out: real-time weather detection, AI-powered analysis, 
+            mobile optimization, and intelligent safety recommendations. Experience reliable performance 
+            and precision in every traffic scene.
           </Typography>
         </Box>
 
