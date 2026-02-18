@@ -1,0 +1,9 @@
+@import "tailwindcss";
+html {
+  scroll-behavior: smooth;
+  height: -webkit-fill-available;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+}
