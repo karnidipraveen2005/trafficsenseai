@@ -6,9 +6,11 @@ import AppAppBar from './components/AppAppBar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Chat from './pages/Chat';
+import Profile from './pages/Profile';
 
 // Context for Dark/Light mode
-export const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
+export const ColorModeContext = React.createContext({ toggleColorMode: () => { } });
 
 export default function App() {
   const [mode, setMode] = React.useState('light');
@@ -29,7 +31,7 @@ export default function App() {
           mode,
           primary: {
             // specific tech-blue for "Intelligent Systems" feel
-            main: mode === 'light' ? '#0288d1' : '#29b6f6', 
+            main: mode === 'light' ? '#0288d1' : '#29b6f6',
           },
           background: {
             // Slight cool-grey tint for "Engineering" look in light mode
@@ -89,6 +91,9 @@ export default function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat/:modelId" element={<Chat />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </Router>
       </ThemeProvider>
