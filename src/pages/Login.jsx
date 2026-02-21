@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -24,16 +24,46 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { useTheme, alpha } from '@mui/material/styles';
 import { ColorModeContext } from '../App';
+import { toast } from 'react-toastify';
+import api from '../api';
+import { setAuthSession } from '../utils/auth';
 
 export default function Login() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const colorMode = React.useContext(ColorModeContext);
   const [showPassword, setShowPassword] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleLogin = async () => {
+    try {
+      if (!email || !password) {
+        toast.error('Please enter both email and password.');
+        return;
+      }
+
+      const response = await api.post('/accounts/login/', { email, password });
+      const { token, user } = response.data;
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      const targetRoute = next || '/chat';
+      setAuthSession(token, user);
+
+      toast.success('Logged in successfully!');
+      navigate(targetRoute, { replace: true });
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.detail) {
+        toast.error(`Login failed: ${error.response.data.detail}`);
+      } else {
+        toast.error('Login failed. Please check your credentials and try again.');
+      }
+      console.error('Login error:', error);
+    }
+  };
 
   return (
     <Box
@@ -226,21 +256,21 @@ export default function Login() {
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 4,
-                  bgcolor: theme.palette.mode === 'light' 
-                    ? alpha('#000', 0.05) 
+                  bgcolor: theme.palette.mode === 'light'
+                    ? alpha('#000', 0.05)
                     : alpha('#fff', 0.08),
                   height: '56px',
                   '& fieldset': {
                     border: 'none',
                   },
                   '&:hover': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                   },
                   '&.Mui-focused': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                     '& fieldset': {
                       border: `2px solid ${theme.palette.primary.main}`,
@@ -272,21 +302,21 @@ export default function Login() {
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 4,
-                  bgcolor: theme.palette.mode === 'light' 
-                    ? alpha('#000', 0.05) 
+                  bgcolor: theme.palette.mode === 'light'
+                    ? alpha('#000', 0.05)
                     : alpha('#fff', 0.08),
                   height: '56px',
                   '& fieldset': {
                     border: 'none',
                   },
                   '&:hover': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                   },
                   '&.Mui-focused': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                     '& fieldset': {
                       border: `2px solid ${theme.palette.primary.main}`,
@@ -352,7 +382,7 @@ export default function Login() {
               fullWidth
               variant="contained"
               size="large"
-              onClick={() => navigate('/')}
+              onClick={handleLogin}
               sx={{
                 py: 2,
                 mb: 2,

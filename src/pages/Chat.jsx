@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Box, Typography, IconButton, InputBase, Paper, Button, Avatar, Drawer, CircularProgress, useMediaQuery } from '@mui/material';
+import { Box, Typography, IconButton, InputBase, Paper, Button, Avatar, Drawer, useMediaQuery } from '@mui/material';
 import { ColorModeContext } from '../App';
 import MenuIcon from '@mui/icons-material/Menu';
 import AddIcon from '@mui/icons-material/Add';
@@ -11,13 +11,14 @@ import TrafficIcon from '@mui/icons-material/Traffic';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import MicIcon from '@mui/icons-material/Mic';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SendIcon from '@mui/icons-material/Send';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
+import { toast } from 'react-toastify';
+import api from '../api';
+import { clearAuthSession, getStoredUser } from '../utils/auth';
 
 const MODELS = [
     { id: 'object-detection', name: 'Object Detection', icon: <CenterFocusStrongIcon fontSize="small" /> },
@@ -41,6 +42,9 @@ export default function Chat() {
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
+    const storedUser = getStoredUser();
+    const userName = storedUser?.name || 'User';
+    const userInitial = userName.charAt(0).toUpperCase() || 'U';
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,6 +85,22 @@ export default function Chat() {
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
+    };
+
+    const handleLogout = async (event) => {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        try {
+            await api.post('/accounts/logout/');
+        } catch (error) {
+            // Continue logout even if server request fails
+        } finally {
+            clearAuthSession();
+            toast.success('Logged out successfully.');
+            navigate('/', { replace: true });
+        }
     };
 
     // Layout constraints
@@ -242,25 +262,22 @@ export default function Chat() {
                     {isExpanded ? (
                         <>
                             <Box className="flex items-center gap-3 mb-2 w-full">
-                                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>K</Avatar>
+                                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>{userInitial}</Avatar>
                                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                                    <Typography variant="body2" fontWeight="bold" noWrap>KarnidiVeera</Typography>
+                                    <Typography variant="body2" fontWeight="bold" noWrap>{userName}</Typography>
                                 </Box>
                             </Box>
                             <Button
                                 size="small"
                                 color="error"
                                 sx={{ textTransform: 'none', alignSelf: 'center', fontWeight: 'bold' }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate('/login');
-                                }}
+                                onClick={handleLogout}
                             >
                                 Logout
                             </Button>
                         </>
                     ) : (
-                        <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>K</Avatar>
+                        <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>{userInitial}</Avatar>
                     )}
                 </Box>
             </Box>
@@ -312,12 +329,15 @@ export default function Chat() {
                                 <MenuIcon />
                             </IconButton>
                         )}
-                        <Button sx={{ textTransform: 'none', fontWeight: 600, color: 'text.primary', fontSize: { xs: '0.9rem', sm: '1.1rem' } }}>
+                        <Button
+                            onClick={() => navigate('/')}
+                            sx={{ textTransform: 'none', fontWeight: 600, color: 'text.primary', fontSize: { xs: '0.9rem', sm: '1.1rem' } }}
+                        >
                             TrafficSenseAI <Box component="span" sx={{ ml: 1, fontSize: '0.8rem', color: 'text.secondary' }}>v1.0  ▼</Box>
                         </Button>
                     </Box>
                     <Box>
-                        <Avatar sx={{ bgcolor: 'primary.main', width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 }, cursor: 'pointer' }} onClick={() => navigate('/profile')}>K</Avatar>
+                        <Avatar sx={{ bgcolor: 'primary.main', width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 }, cursor: 'pointer' }} onClick={() => navigate('/profile')}>{userInitial}</Avatar>
                     </Box>
                 </Box>
 
@@ -338,7 +358,7 @@ export default function Chat() {
                                     mb: 1
                                 }}
                             >
-                                Hello, KarnidiVeera
+                                Hello, {userName}
                             </Typography>
                             <Typography variant="h4" color="text.secondary" sx={{ mb: 4, fontSize: { xs: '1rem', md: '1.25rem' } }}>
                                 {modelId ? `Ready for ${MODELS.find(m => m.id === modelId)?.name}?` : 'Ready for intersection modeling and traffic segmentation?'}
@@ -379,7 +399,7 @@ export default function Chat() {
                             {messages.map((msg, idx) => (
                                 <Box key={idx} sx={{ display: 'flex', gap: 2, flexDirection: msg.sender === 'user' ? 'row-reverse' : 'row' }}>
                                     {msg.sender === 'user' ? (
-                                        <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>K</Avatar>
+                                        <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>{userInitial}</Avatar>
                                     ) : (
                                         <Avatar sx={{ bgcolor: isDark ? '#1E1E1E' : '#FFFFFF', border: '1px solid', borderColor: 'divider', width: 32, height: 32 }}>
                                             <TrafficIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />

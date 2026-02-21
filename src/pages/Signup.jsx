@@ -20,6 +20,8 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useTheme, alpha } from '@mui/material/styles';
 import { ColorModeContext } from '../App';
+import { toast } from 'react-toastify';
+import api from '../api';
 
 export default function Signup() {
   const theme = useTheme();
@@ -37,6 +39,28 @@ export default function Signup() {
 
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
+  };
+
+  const handleSignup = async () => {
+    try {
+      // Basic validation
+      if (!formData.name || !formData.phone || !formData.email || !formData.password) {
+        toast.error('Please fill in all fields.');
+        return;
+      }
+
+      await api.post('/accounts/signup/', formData);
+
+      toast.success('Account created successfully! Please login.');
+      navigate('/login', { replace: true });
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.detail) {
+        toast.error(`Signup failed: ${error.response.data.detail}`);
+      } else {
+        toast.error('Signup failed. Please try again.');
+      }
+      console.error('Signup error:', error);
+    }
   };
 
   return (
@@ -230,21 +254,21 @@ export default function Signup() {
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 4,
-                  bgcolor: theme.palette.mode === 'light' 
-                    ? alpha('#000', 0.05) 
+                  bgcolor: theme.palette.mode === 'light'
+                    ? alpha('#000', 0.05)
                     : alpha('#fff', 0.08),
                   height: '56px',
                   '& fieldset': {
                     border: 'none',
                   },
                   '&:hover': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                   },
                   '&.Mui-focused': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                     '& fieldset': {
                       border: `2px solid ${theme.palette.primary.main}`,
@@ -275,21 +299,21 @@ export default function Signup() {
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 4,
-                  bgcolor: theme.palette.mode === 'light' 
-                    ? alpha('#000', 0.05) 
+                  bgcolor: theme.palette.mode === 'light'
+                    ? alpha('#000', 0.05)
                     : alpha('#fff', 0.08),
                   height: '56px',
                   '& fieldset': {
                     border: 'none',
                   },
                   '&:hover': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                   },
                   '&.Mui-focused': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                     '& fieldset': {
                       border: `2px solid ${theme.palette.primary.main}`,
@@ -321,21 +345,21 @@ export default function Signup() {
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 4,
-                  bgcolor: theme.palette.mode === 'light' 
-                    ? alpha('#000', 0.05) 
+                  bgcolor: theme.palette.mode === 'light'
+                    ? alpha('#000', 0.05)
                     : alpha('#fff', 0.08),
                   height: '56px',
                   '& fieldset': {
                     border: 'none',
                   },
                   '&:hover': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                   },
                   '&.Mui-focused': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                     '& fieldset': {
                       border: `2px solid ${theme.palette.primary.main}`,
@@ -368,21 +392,21 @@ export default function Signup() {
                 mb: 3,
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 4,
-                  bgcolor: theme.palette.mode === 'light' 
-                    ? alpha('#000', 0.05) 
+                  bgcolor: theme.palette.mode === 'light'
+                    ? alpha('#000', 0.05)
                     : alpha('#fff', 0.08),
                   height: '56px',
                   '& fieldset': {
                     border: 'none',
                   },
                   '&:hover': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                   },
                   '&.Mui-focused': {
-                    bgcolor: theme.palette.mode === 'light' 
-                      ? alpha('#000', 0.08) 
+                    bgcolor: theme.palette.mode === 'light'
+                      ? alpha('#000', 0.08)
                       : alpha('#fff', 0.12),
                     '& fieldset': {
                       border: `2px solid ${theme.palette.primary.main}`,
@@ -425,7 +449,7 @@ export default function Signup() {
               fullWidth
               variant="contained"
               size="large"
-              onClick={() => navigate('/')}
+              onClick={handleSignup}
               sx={{
                 py: 2,
                 mb: 2,

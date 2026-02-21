@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Box, Typography, Button, Avatar, Paper, IconButton, TextField } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
@@ -10,6 +10,9 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { ColorModeContext } from '../App';
+import { toast } from 'react-toastify';
+import api from '../api';
+import { clearAuthSession } from '../utils/auth';
 
 export default function Profile() {
     const navigate = useNavigate();
@@ -20,19 +23,84 @@ export default function Profile() {
     // Form state
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
-        displayName: 'KarnidiVeera',
-        email: 'karnidiveera@example.com',
-        phone: '+1 234 567 890',
+        displayName: '',
+        email: '',
+        phone: '',
         password: '' // Only updated if changed
     });
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await api.get('/accounts/profile/');
+                const user = response.data.user;
+                setFormData({
+                    displayName: user.name || '',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    password: ''
+                });
+            } catch (error) {
+                console.error('Failed to fetch profile:', error);
+                toast.error('Failed to load profile data.');
+                if (error.response && error.response.status === 401) {
+                    navigate('/login');
+                }
+            }
+        };
+        fetchProfile();
+    }, [navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSave = () => {
-        // Implement save logic here
-        setIsEditing(false);
+    const handleSave = async () => {
+        try {
+            const updates = {
+                name: formData.displayName,
+                email: formData.email,
+                phone: formData.phone,
+            };
+            if (formData.password) {
+                updates.password = formData.password;
+            }
+
+            const response = await api.put('/accounts/profile/', updates);
+            const user = response.data.user;
+            setFormData({
+                displayName: user.name || '',
+                email: user.email || '',
+                phone: user.phone || '',
+                password: '' // Clear password field after save
+            });
+
+            // Update user in local storage as well
+            localStorage.setItem('user', JSON.stringify(user));
+
+            toast.success('Profile updated successfully!');
+            setIsEditing(false);
+        } catch (error) {
+            console.error('Failed to update profile:', error);
+            if (error.response && error.response.data) {
+                toast.error(`Update failed: ${JSON.stringify(error.response.data)}`);
+            } else {
+                toast.error('Failed to update profile. Please try again.');
+            }
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await api.post('/accounts/logout/');
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Ignore error and proceed to clear local state
+        } finally {
+            clearAuthSession();
+            toast.success('Logged out successfully.');
+            navigate('/', { replace: true });
+        }
     };
 
     return (
@@ -59,7 +127,7 @@ export default function Profile() {
                         variant="outlined"
                         color="error"
                         startIcon={<LogoutIcon />}
-                        onClick={() => navigate('/login')}
+                        onClick={handleLogout}
                         sx={{
                             borderRadius: '20px',
                             textTransform: 'none',
@@ -72,7 +140,7 @@ export default function Profile() {
                     {/* Mobile Only Logout Icon */}
                     <IconButton
                         color="error"
-                        onClick={() => navigate('/login')}
+                        onClick={handleLogout}
                         sx={{ display: { xs: 'flex', sm: 'none' }, bgcolor: isDark ? 'rgba(211,47,47,0.1)' : 'rgba(211,47,47,0.05)' }}
                     >
                         <LogoutIcon />
@@ -124,7 +192,7 @@ export default function Profile() {
                         </Box>
                     </Box>
 
-                    <Typography variant="h4" fontWeight="bold" sx={{ mb: 4 }}>KarnidiVeera</Typography>
+                    <Typography variant="h4" fontWeight="bold" sx={{ mb: 4 }}>{formData.displayName || 'User'}</Typography>
 
                     <Button
                         variant="contained"

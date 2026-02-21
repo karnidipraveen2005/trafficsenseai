@@ -15,6 +15,9 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import { ColorModeContext } from '../App';
+import { toast } from 'react-toastify';
+import api from '../api';
+import { clearAuthSession, isAuthenticated } from '../utils/auth';
 
 function LogoIcon() {
   const theme = useTheme();
@@ -42,6 +45,11 @@ export default function AppAppBar() {
   const colorMode = React.useContext(ColorModeContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [authenticated, setAuthenticated] = React.useState(isAuthenticated());
+
+  React.useEffect(() => {
+    setAuthenticated(isAuthenticated());
+  }, [location.pathname]);
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
@@ -63,6 +71,20 @@ export default function AppAppBar() {
       }
     }
     setOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.post('/accounts/logout/');
+    } catch (error) {
+      // Proceed with local logout even if API call fails
+    } finally {
+      clearAuthSession();
+      setAuthenticated(false);
+      toast.success('Logged out successfully.');
+      navigate('/', { replace: true });
+      setOpen(false);
+    }
   };
 
   return (
@@ -166,36 +188,72 @@ export default function AppAppBar() {
             </Button>
 
             {/* Desktop Auth Buttons */}
-            <Button
-              component={RouterLink}
-              to="/login"
-              variant="text"
-              size="small"
-              sx={{
-                display: { xs: 'none', md: 'inline-flex' },
-                color: theme.palette.mode === 'light' ? 'text.primary' : '#fff',
-                fontWeight: 600,
-                textTransform: 'none',
-              }}
-            >
-              Login
-            </Button>
+            {authenticated ? (
+              <>
+                <Button
+                  component={RouterLink}
+                  to="/chat"
+                  variant="text"
+                  size="small"
+                  sx={{
+                    display: { xs: 'none', md: 'inline-flex' },
+                    color: theme.palette.mode === 'dark' ? 'text.primary' : '#478cbb',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                  }}
+                >
+                  Chat
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  onClick={handleLogout}
+                  sx={{
+                    display: { xs: 'none', md: 'inline-flex' },
+                    borderRadius: '999px',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    boxShadow: 'none',
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  component={RouterLink}
+                  to="/login"
+                  variant="text"
+                  size="small"
+                  sx={{
+                    display: { xs: 'none', md: 'inline-flex' },
+                    color: theme.palette.mode === 'light' ? 'text.primary' : '#fff',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                  }}
+                >
+                  Login
+                </Button>
 
-            <Button
-              component={RouterLink}
-              to="/signup"
-              variant="contained"
-              size="small"
-              sx={{
-                display: { xs: 'none', md: 'inline-flex' },
-                borderRadius: '999px',
-                textTransform: 'none',
-                fontWeight: 700,
-                boxShadow: 'none',
-              }}
-            >
-              Get Started for Free
-            </Button>
+                <Button
+                  component={RouterLink}
+                  to="/signup"
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    display: { xs: 'none', md: 'inline-flex' },
+                    borderRadius: '999px',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    boxShadow: 'none',
+                  }}
+                >
+                  Get Started for Free
+                </Button>
+              </>
+            )}
 
             {/* MOBILE MENU ICON */}
             <Box sx={{ display: { md: 'none' }, ml: 1 }}>
@@ -213,19 +271,28 @@ export default function AppAppBar() {
                   <MenuItem onClick={() => handleNavClick('testimonials')}>Testimonials</MenuItem>
                   <MenuItem onClick={() => handleNavClick('faq')}>FAQ</MenuItem>
                   <Divider sx={{ my: 2 }} />
-                  <MenuItem component={RouterLink} to="/login" onClick={toggleDrawer(false)}>Login</MenuItem>
-                  <Box sx={{ p: 1 }}>
-                    <Button 
-                      component={RouterLink} 
-                      to="/signup"
-                      variant="contained" 
-                      fullWidth 
-                      sx={{ borderRadius: 2, textTransform: 'none' }}
-                      onClick={toggleDrawer(false)}
-                    >
-                      Get Started for Free
-                    </Button>
-                  </Box>
+                  {authenticated ? (
+                    <>
+                      <MenuItem component={RouterLink} to="/chat" onClick={toggleDrawer(false)}>Dashboard</MenuItem>
+                      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem component={RouterLink} to="/login" onClick={toggleDrawer(false)}>Login</MenuItem>
+                      <Box sx={{ p: 1 }}>
+                        <Button 
+                          component={RouterLink} 
+                          to="/signup"
+                          variant="contained" 
+                          fullWidth 
+                          sx={{ borderRadius: 2, textTransform: 'none' }}
+                          onClick={toggleDrawer(false)}
+                        >
+                          Get Started for Free
+                        </Button>
+                      </Box>
+                    </>
+                  )}
                 </Box>
               </Drawer>
             </Box>
