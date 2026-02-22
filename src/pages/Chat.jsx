@@ -285,7 +285,23 @@ export default function Chat() {
     );
 
     return (
-        <Box className="flex h-screen overflow-hidden w-full max-w-full" sx={{ bgcolor: isDark ? '#131314' : '#FFFFFF', color: 'text.primary' }}>
+        <Box
+            className="flex overflow-hidden w-full max-w-full"
+            sx={{
+                height: '100dvh',
+                minHeight: '100svh',
+                maxHeight: '100dvh',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                bgcolor: isDark ? '#131314' : '#FFFFFF',
+                color: 'text.primary',
+                overflow: 'hidden',
+                overscrollBehavior: 'none',
+            }}
+        >
             {/* Mobile Drawer */}
             <Drawer
                 variant="temporary"
@@ -317,11 +333,14 @@ export default function Chat() {
                 </Box>
             </Box>
 
-            {/* Main Chat Area */}
-            <Box className="flex-1 flex flex-col relative h-full w-full max-w-full overflow-hidden">
+            {/* Main Chat Area - STRICT FLEX COLUMN */}
+            <Box
+                className="flex-1 flex flex-col relative h-full w-full max-w-full overflow-hidden"
+                sx={{ minHeight: 0, overflow: 'hidden' }}
+            >
 
-                {/* Unified Top Header */}
-                <Box className="p-4 flex items-center justify-between z-10">
+                {/* 1. FIXED TOP HEADER (flexShrink: 0 prevents it from squishing) */}
+                <Box className="p-4 flex items-center justify-between z-10" sx={{ bgcolor: isDark ? '#131314' : '#FFFFFF', width: '100%', flexShrink: 0 }}>
                     <Box className="flex items-center gap-2">
                         {/* Mobile Menu Toggle (Only shown on mobile) */}
                         {isMobile && (
@@ -341,8 +360,20 @@ export default function Chat() {
                     </Box>
                 </Box>
 
-                {/* Chat Content / Welcome Message */}
-                <Box className="flex-1 flex flex-col items-center p-4 overflow-y-auto relative w-full" sx={{ justifyContent: messages.length === 0 ? 'center' : 'flex-start', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+                {/* 2. SCROLLABLE MIDDLE CHAT CONTENT (flex: 1 fills the space, overflow-y: auto makes it scroll) */}
+                <Box
+                    className="flex-1 flex flex-col items-center p-4 overflow-y-auto w-full"
+                    sx={{
+                        justifyContent: messages.length === 0 ? 'center' : 'flex-start',
+                        scrollbarWidth: 'none',
+                        '&::-webkit-scrollbar': { display: 'none' },
+                        flex: 1,
+                        minHeight: 0,
+                        overflowY: 'auto',
+                        overscrollBehavior: 'contain',
+                        WebkitOverflowScrolling: 'touch',
+                    }}
+                >
 
                     {messages.length === 0 && (
                         <Box sx={{ zIndex: 1, textAlign: 'center', mt: { xs: 2, md: 0 } }}>
@@ -443,63 +474,73 @@ export default function Chat() {
                     )}
                 </Box>
 
-                {/* Input Area */}
-                <Box className="p-4 pt-0 flex justify-center w-full z-10">
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: '12px 16px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            width: '100%',
-                            maxWidth: 800,
-                            borderRadius: '24px',
-                            bgcolor: isDark ? '#1E1F20' : '#F0F4F9',
-                            border: 'none',
-                        }}
-                    >
-                        <InputBase
-                            multiline
-                            minRows={1}
-                            maxRows={6}
-                            sx={{ width: '100%', fontSize: '1rem', mb: 1, px: 1, '& textarea': { scrollbarWidth: 'none' } }}
-                            placeholder={modelId ? `Send request to ${MODELS.find(m => m.id === modelId)?.name}...` : "Enter your query here..."}
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                        />
-                        <Box className="flex justify-between items-center w-full">
-                            <Box className="flex gap-1">
-                                <IconButton sx={{ p: '8px' }}>
-                                    <AddIcon />
-                                </IconButton>
-                                <IconButton sx={{ p: '8px' }}>
-                                    <AddPhotoAlternateIcon />
-                                </IconButton>
-                            </Box>
-                            <Box className="flex gap-1">
-                                {!inputValue.trim() ? (
+                {/* 3. FIXED BOTTOM INPUT AREA & FOOTNOTE (flexShrink: 0 prevents it from squishing) */}
+                <Box
+                    sx={{
+                        flexShrink: 0,
+                        width: '100%',
+                        bgcolor: isDark ? '#131314' : '#FFFFFF',
+                        pb: 'env(safe-area-inset-bottom)',
+                    }}
+                >
+                    <Box className="p-4 pt-0 flex justify-center w-full z-10">
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: '12px 16px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                width: '100%',
+                                maxWidth: 800,
+                                borderRadius: '24px',
+                                bgcolor: isDark ? '#1E1F20' : '#F0F4F9',
+                                border: 'none',
+                            }}
+                        >
+                            <InputBase
+                                multiline
+                                minRows={1}
+                                maxRows={6}
+                                sx={{ width: '100%', fontSize: '1rem', mb: 1, px: 1, '& textarea': { scrollbarWidth: 'none' } }}
+                                placeholder={modelId ? `Send request to ${MODELS.find(m => m.id === modelId)?.name}...` : "Enter your query here..."}
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                            <Box className="flex justify-between items-center w-full">
+                                <Box className="flex gap-1">
                                     <IconButton sx={{ p: '8px' }}>
-                                        <MicIcon />
+                                        <AddIcon />
                                     </IconButton>
-                                ) : (
-                                    <IconButton
-                                        sx={{ p: '8px', bgcolor: 'primary.main', color: '#fff', '&:hover': { bgcolor: 'primary.dark' } }}
-                                        onClick={handleSend}
-                                        disabled={isLoading}
-                                    >
-                                        <SendIcon fontSize="small" />
+                                    <IconButton sx={{ p: '8px' }}>
+                                        <AddPhotoAlternateIcon />
                                     </IconButton>
-                                )}
+                                </Box>
+                                <Box className="flex gap-1">
+                                    {!inputValue.trim() ? (
+                                        <IconButton sx={{ p: '8px' }}>
+                                            <MicIcon />
+                                        </IconButton>
+                                    ) : (
+                                        <IconButton
+                                            sx={{ p: '8px', bgcolor: 'primary.main', color: '#fff', '&:hover': { bgcolor: 'primary.dark' } }}
+                                            onClick={handleSend}
+                                            disabled={isLoading}
+                                        >
+                                            <SendIcon fontSize="small" />
+                                        </IconButton>
+                                    )}
+                                </Box>
                             </Box>
-                        </Box>
-                    </Paper>
+                        </Paper>
+                    </Box>
+
+                    {/* Footnote included in the non-shrinking footer block */}
+                    <Typography variant="caption" color="text.secondary" align="center" sx={{ display: 'block', pb: 2, pt: 1, zIndex: 10 }}>
+                        TrafficSenseAI may produce incorrect analyses. Please double check critical traffic routing decisions.
+                    </Typography>
                 </Box>
 
-                {/* Footnote */}
-                <Typography variant="caption" color="text.secondary" align="center" sx={{ pb: 2, pt: 1, zIndex: 10 }}>
-                    TrafficSenseAI may produce incorrect analyses. Please double check critical traffic routing decisions.
-                </Typography>
             </Box>
         </Box>
     );

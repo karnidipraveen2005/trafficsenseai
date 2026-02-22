@@ -22,6 +22,11 @@ export default function Profile() {
 
     // Form state
     const [isEditing, setIsEditing] = useState(false);
+    const [userProfile, setUserProfile] = useState({
+        displayName: '',
+        email: '',
+        phone: ''
+    });
     const [formData, setFormData] = useState({
         displayName: '',
         email: '',
@@ -34,10 +39,14 @@ export default function Profile() {
             try {
                 const response = await api.get('/accounts/profile/');
                 const user = response.data.user;
-                setFormData({
+                const fetchedData = {
                     displayName: user.name || '',
                     email: user.email || '',
-                    phone: user.phone || '',
+                    phone: user.phone || ''
+                };
+                setUserProfile(fetchedData);
+                setFormData({
+                    ...fetchedData,
                     password: ''
                 });
             } catch (error) {
@@ -68,10 +77,14 @@ export default function Profile() {
 
             const response = await api.put('/accounts/profile/', updates);
             const user = response.data.user;
-            setFormData({
+            const updatedProfile = {
                 displayName: user.name || '',
                 email: user.email || '',
-                phone: user.phone || '',
+                phone: user.phone || ''
+            };
+            setUserProfile(updatedProfile);
+            setFormData({
+                ...updatedProfile,
                 password: '' // Clear password field after save
             });
 
@@ -149,13 +162,15 @@ export default function Profile() {
             </Box>
 
             {/* Main Content Area */}
-            <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, mt: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {/* Changed px: 3 to px: { xs: 2, sm: 3 } to give a bit more room on mobile */}
+            <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 3 }, mt: 4, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
 
                 {/* Left Card: User Summary */}
                 <Paper
                     elevation={isDark ? 0 : 2}
                     sx={{
-                        flex: '1 1 300px',
+                        // MOBILE FIX: 100% width on xs, original 300px on md
+                        flex: { xs: '1 1 100%', md: '1 1 300px' },
                         p: 4,
                         borderRadius: '24px',
                         bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
@@ -164,7 +179,8 @@ export default function Profile() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        boxSizing: 'border-box'
                     }}
                 >
                     <Box sx={{ position: 'relative', mb: 3 }}>
@@ -187,12 +203,12 @@ export default function Profile() {
                                     fontWeight: 'bold'
                                 }}
                             >
-                                K
+                                {userProfile.displayName ? userProfile.displayName.charAt(0).toUpperCase() : 'U'}
                             </Avatar>
                         </Box>
                     </Box>
 
-                    <Typography variant="h4" fontWeight="bold" sx={{ mb: 4 }}>{formData.displayName || 'User'}</Typography>
+                    <Typography variant="h4" fontWeight="bold" sx={{ mb: 4, wordBreak: 'break-word' }}>{userProfile.displayName || 'User'}</Typography>
 
                     <Button
                         variant="contained"
@@ -208,7 +224,12 @@ export default function Profile() {
                                 bgcolor: 'text.secondary',
                             }
                         }}
-                        onClick={() => setIsEditing(!isEditing)}
+                        onClick={() => {
+                            if (isEditing) {
+                                setFormData({ ...userProfile, password: '' });
+                            }
+                            setIsEditing(!isEditing);
+                        }}
                     >
                         {isEditing ? 'Cancel Editing' : 'Edit Account'}
                     </Button>
@@ -218,12 +239,15 @@ export default function Profile() {
                 <Paper
                     elevation={isDark ? 0 : 2}
                     sx={{
-                        flex: '2 1 600px',
-                        p: 4,
+                        // MOBILE FIX: 100% width on xs, original 600px on md
+                        flex: { xs: '1 1 100%', md: '2 1 600px' },
+                        p: { xs: 2.5, sm: 4 }, // slightly smaller padding on mobile
                         borderRadius: '24px',
                         bgcolor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
                         border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(2,136,209,0.1)',
                         boxShadow: isDark ? 'none' : '0 8px 32px rgba(2,136,209,0.08)',
+                        boxSizing: 'border-box',
+                        overflow: 'hidden'
                     }}
                 >
                     <Typography variant="overline" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4, fontWeight: 'bold', letterSpacing: 1 }}>
@@ -250,12 +274,13 @@ export default function Profile() {
                                 />
                             ) : (
                                 <Box sx={{ p: 2, borderRadius: '16px', bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(2,136,209,0.03)', border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(2,136,209,0.1)' }}>
-                                    <Typography variant="body1">{formData.displayName}</Typography>
+                                    <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>{userProfile.displayName}</Typography>
                                 </Box>
                             )}
                         </Box>
 
-                        <Box sx={{ flex: '1 1 calc(50% - 12px)' }}>
+                        {/* MOBILE FIX: Stack on mobile, side-by-side on desktop */}
+                        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                             <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>Email Address</Typography>
                             {isEditing ? (
                                 <TextField
@@ -277,13 +302,14 @@ export default function Profile() {
                                 />
                             ) : (
                                 <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: '16px', bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(2,136,209,0.03)', border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(2,136,209,0.1)' }}>
-                                    <EmailIcon color="action" sx={{ mr: 2 }} />
-                                    <Typography variant="body1">{formData.email}</Typography>
+                                    <EmailIcon color="action" sx={{ mr: 2, flexShrink: 0 }} />
+                                    <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>{userProfile.email}</Typography>
                                 </Box>
                             )}
                         </Box>
 
-                        <Box sx={{ flex: '1 1 calc(50% - 12px)' }}>
+                        {/* MOBILE FIX: Stack on mobile, side-by-side on desktop */}
+                        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)' } }}>
                             <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, ml: 1 }}>Phone Number</Typography>
                             {isEditing ? (
                                 <TextField
@@ -305,8 +331,8 @@ export default function Profile() {
                                 />
                             ) : (
                                 <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: '16px', bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(2,136,209,0.03)', border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(2,136,209,0.1)' }}>
-                                    <PhoneIcon color="action" sx={{ mr: 2 }} />
-                                    <Typography variant="body1">{formData.phone}</Typography>
+                                    <PhoneIcon color="action" sx={{ mr: 2, flexShrink: 0 }} />
+                                    <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>{userProfile.phone}</Typography>
                                 </Box>
                             )}
                         </Box>
@@ -338,7 +364,10 @@ export default function Profile() {
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                             <Button
                                 variant="outlined"
-                                onClick={() => setIsEditing(false)}
+                                onClick={() => {
+                                    setFormData({ ...userProfile, password: '' });
+                                    setIsEditing(false);
+                                }}
                                 sx={{
                                     borderRadius: '24px',
                                     py: 1.5,

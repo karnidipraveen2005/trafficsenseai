@@ -273,7 +273,7 @@ export default function AppAppBar() {
                   <Divider sx={{ my: 2 }} />
                   {authenticated ? (
                     <>
-                      <MenuItem component={RouterLink} to="/chat" onClick={toggleDrawer(false)}>Dashboard</MenuItem>
+                      <MenuItem component={RouterLink} to="/chat" onClick={toggleDrawer(false)}>Chat</MenuItem>
                       <MenuItem onClick={handleLogout}>Logout</MenuItem>
                     </>
                   ) : (
